@@ -35,7 +35,7 @@ void rbm_features(){
 
     auto rbm = std::make_unique<rbm_t>();
 
-    rbm->load("file.dat") //Load from file
+    rbm->load("file.dat"); //Load from file
 
     //2. Read dataset
 
@@ -52,7 +52,7 @@ void rbm_features(){
 
     auto probs = rbm->activation_probabilities(samples[0]);
 
-    rbm->store("file.dat") //Store to file
+    rbm->store("file.dat"); //Store to file
 }
 
 void svm_classify(){
