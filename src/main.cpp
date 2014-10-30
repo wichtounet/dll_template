@@ -35,6 +35,8 @@ void rbm_features(){
 
     auto rbm = std::make_unique<rbm_t>();
 
+    rbm->load("file.dat") //Load from file
+
     //2. Read dataset
 
     std::vector<std::vector<double>> samples;     //All the samples
@@ -49,6 +51,8 @@ void rbm_features(){
     //4. Get the activation probabilities for a sample
 
     auto probs = rbm->activation_probabilities(samples[0]);
+
+    rbm->store("file.dat") //Store to file
 }
 
 void svm_classify(){
@@ -62,6 +66,8 @@ void svm_classify(){
         >>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
+
+    dbn->load("file.dat"); //Load from file
 
     //2. Read dataset
 
@@ -85,6 +91,8 @@ void svm_classify(){
     //6. Predict the label of a sample
 
     auto label = dbn->svm_predict(samples[0]);
+
+    dbn->store("file.dat"); //Store to file
 }
 
 void read_data(std::vector<std::vector<double>>& samples, std::vector<std::size_t>& labels){
