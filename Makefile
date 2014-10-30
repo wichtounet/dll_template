@@ -10,6 +10,10 @@ include make-utils/cpp-utils.mk
 CXX_FLAGS += -Idll/include -Idll/nice_svm/include -Idll/etl/include -std=c++1y
 LD_FLAGS  += -lsvm -lopencv_core -lopencv_imgproc -lopencv_highgui -ljpeg
 
+ifneq (,$(findstring clang,$(CXX)))
+	CXX_FLAGS += -stdlib=libc++
+endif
+
 $(eval $(call auto_folder_compile,src))
 $(eval $(call auto_add_executable,$(PROJECT_NAME)))
 
