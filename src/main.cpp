@@ -6,6 +6,7 @@
 #include "dll/dbn.hpp"
 #include "dll/ocv_visualizer.hpp"
 
+#include "dll/cpp_utils/data.hpp"
 
 void read_data(std::vector<std::vector<double>>& samples, std::vector<std::size_t>& labels);
 
@@ -98,4 +99,6 @@ void svm_classify(){
 void read_data(std::vector<std::vector<double>>& samples, std::vector<std::size_t>& labels){
     //TODO Read samples
     //TODO Read labels
+
+    //cpp::normalize_each(samples); //For gaussian visible units
 }
