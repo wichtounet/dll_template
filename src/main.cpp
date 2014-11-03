@@ -5,6 +5,7 @@
 #include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/ocv_visualizer.hpp"
+#include "dll/test.hpp"
 
 #include "dll/cpp_utils/data.hpp"
 
@@ -13,9 +14,19 @@ void read_data(std::vector<std::vector<double>>& samples, std::vector<std::size_
 void rbm_features();
 void svm_classify();
 
+/*
+ * The DLL library can be used in two ways:
+ * 1. For feature extraction, in which case a RBM (or DBN) is trained on the samples
+ *    and the features (probabilities activation) are used for another purpose.
+ * 2. For classification. In which case, a DBN is trained on the samples and
+ *    fine-tuned with the labels. Fine-tuning can be backpropagation, Conjugate Gradient
+ *    or SVM classification on top of the features.
+ *
+ * For case 1, check rbm_features() function, for case 2, check svm_classify().
+ */
+
 int main(){
-    //rbm_features(); //Only one RBM, no classification, pure feature extraction
-    //svm_classify(); //Classify RBM features with SVM
+	//Call the function you are interested in and complete it
 
     return 0;
 }
@@ -51,7 +62,11 @@ void rbm_features(){
 
     //4. Get the activation probabilities for a sample
 
-    auto probs = rbm->activation_probabilities(samples[0]);
+    for(auto& sample : samples){
+        auto probs = rbm->activation_probabilities(samples[0]);
+
+        //Do something with the extracted features
+    }
 
     rbm->store("file.dat"); //Store to file
 }
@@ -64,7 +79,9 @@ void svm_classify(){
             dll::rbm_desc<28 * 28, 100, dll::batch_size<50>, dll::init_weights, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
             dll::rbm_desc<100, 100, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
             dll::rbm_desc<100, 200, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t
-        >>::dbn_t;
+        >
+        //, dll::watcher<dll::opencv_dbn_visualizer>>::dbn_t dbn_t; //For visualization
+        >::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -81,17 +98,15 @@ void svm_classify(){
 
     dbn->pretrain(samples, 100);
 
-    //4. Get the activation probabilities for a sample
-
-    auto probs = dbn->activation_probabilities(samples[0]);
-
-    //5. Train the SVM
+    //4. Train the SVM
 
     dbn->svm_train(samples, labels);
 
-    //6. Predict the label of a sample
+    //5. Compute accuracy on the training set
 
-    auto label = dbn->svm_predict(samples[0]);
+    auto training_error = dll::test_set(dbn, samples, labels, dll::svm_predictor());
+
+    //6. Store the file if you want to save it for later
 
     dbn->store("file.dat"); //Store to file
 }
