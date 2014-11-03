@@ -80,7 +80,7 @@ void svm_classify(){
             dll::rbm_desc<100, 100, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
             dll::rbm_desc<100, 200, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t
         >
-        //, dll::watcher<dll::opencv_dbn_visualizer>>::dbn_t dbn_t; //For visualization
+        //, dll::watcher<dll::opencv_dbn_visualizer> //For visualization
         >::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
