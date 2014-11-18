@@ -22,10 +22,11 @@ void svm_classify();
  *    fine-tuned with the labels. Fine-tuning can be backpropagation, Conjugate Gradient
  *    or SVM classification on top of the features.
  *
- * For case 1, check rbm_features()
+ * For case 1, check rbm_train() and rbm_features()
  * For case 2, check svm_train() and svm_test()
  *
- * Both function use read_data, this function should be completed first.
+ * Each function use the read_data function, therefore this function should be
+ * completed first.
  */
 
 int main(){
@@ -34,23 +35,23 @@ int main(){
     return 0;
 }
 
-void rbm_features(){
-    //1. Configure and create the RBM
+//0. Configure the RBM
 
-    using rbm_t = dll::rbm_desc<
-       28 * 28,                                             //Number of visible units
-       200                                                  //Number of hidden units
-       , dll::momentum                                      //Activate momentum ?
-       , dll::batch_size<25>                                //Minibatch
-       , dll::weight_decay<>                                //Activate weight decay ?
-       //, dll::sparsity<>                                  //Activate weight decay ?
-       //, dll::visible<dll::unit_type::GAUSSIAN>           //Gaussian visible units ?
-       //, dll::watcher<dll::opencv_rbm_visualizer>         //OpenCV Visualizer ?
-    >::rbm_t;
+using rbm_t = dll::rbm_desc<
+   28 * 28,                                             //Number of visible units
+   200                                                  //Number of hidden units
+   , dll::momentum                                      //Activate momentum ?
+   , dll::batch_size<25>                                //Minibatch
+   , dll::weight_decay<>                                //Activate weight decay ?
+   //, dll::sparsity<>                                  //Activate weight decay ?
+   //, dll::visible<dll::unit_type::GAUSSIAN>           //Gaussian visible units ?
+   //, dll::watcher<dll::opencv_rbm_visualizer>         //OpenCV Visualizer ?
+>::rbm_t;
+
+void rbm_train(){
+    //1. Create the RBM
 
     auto rbm = std::make_unique<rbm_t>();
-
-    rbm->load("file.dat"); //Load from file
 
     //2. Read dataset
 
@@ -59,19 +60,39 @@ void rbm_features(){
 
     read_data(samples, labels);
 
-    //3. Train the RBM for x epochs
+    //3. Train the RBM for 100 epochs
 
     rbm->train(samples, 100);
 
-    //4. Get the activation probabilities for a sample
+    //4. Store the RBM
+
+    rbm->store("file.dat");
+}
+
+//Extract features from a RBM
+void rbm_features(){
+    //1. Create the RBM
+
+    auto rbm = std::make_unique<rbm_t>();
+
+    //2. Load from file
+
+    rbm->load("file.dat");
+
+    //2. Read dataset
+
+    std::vector<std::vector<double>> samples;     //All the samples
+    std::vector<std::size_t> labels;              //All the labels
+
+    read_data(samples, labels);
+
+    //3. Get the activation probabilities for each sample
 
     for(auto& sample : samples){
         auto probs = rbm->activation_probabilities(samples[0]);
 
         //Do something with the extracted features
     }
-
-    rbm->store("file.dat"); //Store to file
 }
 
 //0. Configure the DBN
@@ -115,20 +136,22 @@ void svm_test(){
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->load("file.dat"); //Load from file
+    //2. Load the DBN from file
 
-    //2. Read dataset
+    dbn->load("file.dat");
+
+    //3. Read dataset
 
     std::vector<std::vector<double>> samples;     //All the samples
     std::vector<std::size_t> labels;              //All the labels
 
     read_data(samples, labels);
 
-    //3. Compute accuracy on the training set
+    //4. Compute accuracy on the training set
 
     auto training_error = dll::test_set(dbn, samples, labels, dll::svm_predictor());
 
-    //4. Example: Get the predicted label for each sample
+    //5. Example: Get the predicted label for each sample
 
     for(std::size_t i = 0; i < samples.size(); ++i){
         const auto& sample = samples[i];
