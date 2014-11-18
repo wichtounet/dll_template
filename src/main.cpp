@@ -22,7 +22,10 @@ void svm_classify();
  *    fine-tuned with the labels. Fine-tuning can be backpropagation, Conjugate Gradient
  *    or SVM classification on top of the features.
  *
- * For case 1, check rbm_features() function, for case 2, check svm_classify().
+ * For case 1, check rbm_features()
+ * For case 2, check svm_train() and svm_test()
+ *
+ * Both function use read_data, this function should be completed first.
  */
 
 int main(){
@@ -71,21 +74,21 @@ void rbm_features(){
     rbm->store("file.dat"); //Store to file
 }
 
-void svm_classify(){
-    //1. Configure and create the RBM
+//0. Configure the DBN
 
-    using dbn_t = dll::dbn_desc<
-        dll::dbn_label_layers<
-            dll::rbm_desc<28 * 28, 100, dll::batch_size<50>, dll::init_weights, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
-            dll::rbm_desc<100, 100, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
-            dll::rbm_desc<100, 200, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t
-        >
-        //, dll::watcher<dll::opencv_dbn_visualizer> //For visualization
-        >::dbn_t;
+using dbn_t = dll::dbn_desc<
+    dll::dbn_label_layers<
+        dll::rbm_desc<28 * 28, 100, dll::batch_size<50>, dll::init_weights, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
+        dll::rbm_desc<100, 100, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t,
+        dll::rbm_desc<100, 200, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::rbm_t
+    >
+    //, dll::watcher<dll::opencv_dbn_visualizer> //For visualization
+    >::dbn_t;
+
+void svm_train(){
+    //1. Create the DBN
 
     auto dbn = std::make_unique<dbn_t>();
-
-    dbn->load("file.dat"); //Load from file
 
     //2. Read dataset
 
@@ -102,13 +105,39 @@ void svm_classify(){
 
     dbn->svm_train(samples, labels);
 
-    //5. Compute accuracy on the training set
+    //5. Store the file if you want to save it for later
+
+    dbn->store("file.dat"); //Store to file
+}
+
+void svm_test(){
+    //1. Create the DBN
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->load("file.dat"); //Load from file
+
+    //2. Read dataset
+
+    std::vector<std::vector<double>> samples;     //All the samples
+    std::vector<std::size_t> labels;              //All the labels
+
+    read_data(samples, labels);
+
+    //3. Compute accuracy on the training set
 
     auto training_error = dll::test_set(dbn, samples, labels, dll::svm_predictor());
 
-    //6. Store the file if you want to save it for later
+    //4. Example: Get the predicted label for each sample
 
-    dbn->store("file.dat"); //Store to file
+    for(std::size_t i = 0; i < samples.size(); ++i){
+        const auto& sample = samples[i];
+        const auto& label = labels[i];
+
+        auto predicted = dbn->svm_predict(sample);
+
+        //Do something with the predicted label
+    }
 }
 
 void read_data(std::vector<std::vector<double>>& samples, std::vector<std::size_t>& labels){
