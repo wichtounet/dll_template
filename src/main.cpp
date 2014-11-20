@@ -2,6 +2,8 @@
 
 #define DLL_SVM_SUPPORT
 
+#define DLL_PARALLEL //Comment this line if you don't want to use multithreading
+
 #include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/ocv_visualizer.hpp"
